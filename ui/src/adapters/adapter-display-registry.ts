@@ -7,16 +7,9 @@
  */
 import type { ComponentType } from "react";
 import {
-  Bot,
-  Code,
-  Gem,
-  MousePointer2,
   Sparkles,
-  Terminal,
   Cpu,
 } from "lucide-react";
-import { OpenCodeLogoIcon } from "@/components/OpenCodeLogoIcon";
-import { HermesIcon } from "@/components/HermesIcon";
 
 // ---------------------------------------------------------------------------
 // Type suffix parsing
@@ -57,56 +50,6 @@ const adapterDisplayMap: Record<string, AdapterDisplayInfo> = {
     description: "Local Claude agent",
     icon: Sparkles,
     recommended: true,
-  },
-  codex_local: {
-    label: "Codex",
-    description: "Local Codex agent",
-    icon: Code,
-    recommended: true,
-  },
-  gemini_local: {
-    label: "Gemini CLI",
-    description: "Local Gemini agent",
-    icon: Gem,
-  },
-  opencode_local: {
-    label: "OpenCode",
-    description: "Local multi-provider agent",
-    icon: OpenCodeLogoIcon,
-  },
-  hermes_local: {
-    label: "Hermes Agent",
-    description: "Local Hermes CLI agent",
-    icon: HermesIcon,
-  },
-  pi_local: {
-    label: "Pi",
-    description: "Local Pi agent",
-    icon: Terminal,
-  },
-  cursor: {
-    label: "Cursor",
-    description: "Local Cursor agent",
-    icon: MousePointer2,
-  },
-  openclaw_gateway: {
-    label: "OpenClaw Gateway",
-    description: "Invoke OpenClaw via gateway protocol",
-    icon: Bot,
-    comingSoon: true,
-    disabledLabel: "Configure OpenClaw within the App",
-  },
-  process: {
-    label: "Process",
-    description: "Internal process adapter",
-    icon: Cpu,
-    comingSoon: true,
-  },
-  http: {
-    label: "HTTP",
-    description: "Internal HTTP adapter",
-    icon: Cpu,
-    comingSoon: true,
   },
 };
 

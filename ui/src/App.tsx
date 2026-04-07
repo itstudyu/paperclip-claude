@@ -21,7 +21,6 @@ import { Goals } from "./pages/Goals";
 import { GoalDetail } from "./pages/GoalDetail";
 import { Approvals } from "./pages/Approvals";
 import { ApprovalDetail } from "./pages/ApprovalDetail";
-import { Costs } from "./pages/Costs";
 import { Activity } from "./pages/Activity";
 import { Inbox } from "./pages/Inbox";
 import { CompanySettings } from "./pages/CompanySettings";
@@ -149,7 +148,6 @@ function boardRoutes() {
       <Route path="projects/:projectId/workspaces/:workspaceId" element={<ProjectWorkspaceDetail />} />
       <Route path="projects/:projectId/workspaces" element={<ProjectDetail />} />
       <Route path="projects/:projectId/configuration" element={<ProjectDetail />} />
-      <Route path="projects/:projectId/budget" element={<ProjectDetail />} />
       <Route path="issues" element={<Issues />} />
       <Route path="issues/all" element={<Navigate to="/issues" replace />} />
       <Route path="issues/active" element={<Navigate to="/issues" replace />} />
@@ -166,7 +164,6 @@ function boardRoutes() {
       <Route path="approvals/pending" element={<Approvals />} />
       <Route path="approvals/all" element={<Approvals />} />
       <Route path="approvals/:approvalId" element={<ApprovalDetail />} />
-      <Route path="costs" element={<Costs />} />
       <Route path="activity" element={<Activity />} />
       <Route path="inbox" element={<InboxRootRedirect />} />
       <Route path="inbox/mine" element={<Inbox />} />
@@ -203,13 +200,13 @@ function OnboardingRoutePage() {
   const title = matchedCompany
     ? `Add another agent to ${matchedCompany.name}`
     : companies.length > 0
-      ? "Create another company"
-      : "Create your first company";
+      ? "Create another project"
+      : "Create your first project";
   const description = matchedCompany
-    ? "Run onboarding again to add an agent and a starter task for this company."
+    ? "Run onboarding again to add an agent and a starter task for this project."
     : companies.length > 0
-      ? "Run onboarding again to create another company and seed its first agent."
-      : "Get started by creating a company and your first agent.";
+      ? "Run onboarding again to create another project and seed its first agent."
+      : "Get started by creating a project and your first agent.";
 
   return (
     <div className="mx-auto max-w-xl py-10">
@@ -291,12 +288,12 @@ function NoCompaniesStartPage() {
   return (
     <div className="mx-auto max-w-xl py-10">
       <div className="rounded-lg border border-border bg-card p-6">
-        <h1 className="text-xl font-semibold">Create your first company</h1>
+        <h1 className="text-xl font-semibold">Create your first project</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Get started by creating a company.
+          Get started by creating a project.
         </p>
         <div className="mt-4">
-          <Button onClick={() => openOnboarding()}>New Company</Button>
+          <Button onClick={() => openOnboarding()}>New Project</Button>
         </div>
       </div>
     </div>

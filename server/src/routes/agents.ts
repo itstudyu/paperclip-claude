@@ -947,6 +947,66 @@ export function agentRoutes(db: Db) {
     },
   );
 
+  router.post("/companies/:companyId/agents/generate-instructions", async (req, res) => {
+    const companyId = req.params.companyId as string;
+    assertCompanyAccess(req, companyId);
+
+    const { description, agentName, projectGoal } = req.body as {
+      description: string;
+      agentName: string;
+      projectGoal?: string;
+    };
+
+    if (!description || typeof description !== "string") {
+      res.status(400).json({ error: "description is required" });
+      return;
+    }
+    if (!agentName || typeof agentName !== "string") {
+      res.status(400).json({ error: "agentName is required" });
+      return;
+    }
+
+    const prompt = [
+      `Generate an AGENTS.md instructions file for an AI agent named "${agentName}".`,
+      projectGoal ? `The project goal is: ${projectGoal}` : null,
+      `The user describes what this agent should do as follows:\n${description}`,
+      "",
+      "Generate a well-structured AGENTS.md file with these sections:",
+      "1. Agent identity and role",
+      "2. Core responsibilities",
+      "3. Key behaviors and guidelines",
+      "4. Constraints and boundaries",
+      "",
+      "Output ONLY the markdown content for the AGENTS.md file, nothing else.",
+    ]
+      .filter(Boolean)
+      .join("\n");
+
+    try {
+      const { spawn } = await import("node:child_process");
+      const result = await new Promise<string>((resolve, reject) => {
+        const proc = spawn("claude", ["--print", "--output-format", "text", "-p", prompt], {
+          timeout: 60_000,
+          env: { ...process.env },
+          stdio: ["ignore", "pipe", "pipe"],
+        });
+        let stdout = "";
+        let stderr = "";
+        proc.stdout.on("data", (chunk: Buffer) => { stdout += chunk.toString(); });
+        proc.stderr.on("data", (chunk: Buffer) => { stderr += chunk.toString(); });
+        proc.on("error", reject);
+        proc.on("close", (code) => {
+          if (code === 0) resolve(stdout);
+          else reject(new Error(stderr || `claude exited with code ${code}`));
+        });
+      });
+      res.json({ instructions: result.trim() });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to generate instructions";
+      res.status(500).json({ error: message });
+    }
+  });
+
   router.get("/companies/:companyId/agents", async (req, res) => {
     const companyId = req.params.companyId as string;
     assertCompanyAccess(req, companyId);
