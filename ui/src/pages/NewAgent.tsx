@@ -23,30 +23,12 @@ import { getUIAdapter, listUIAdapters } from "../adapters";
 import { useDisabledAdaptersSync } from "../adapters/use-disabled-adapters";
 import { isValidAdapterType } from "../adapters/metadata";
 import { ReportsToPicker } from "../components/ReportsToPicker";
-import {
-  DEFAULT_CODEX_LOCAL_BYPASS_APPROVALS_AND_SANDBOX,
-  DEFAULT_CODEX_LOCAL_MODEL,
-} from "@paperclipai/adapter-codex-local";
-import { DEFAULT_CURSOR_LOCAL_MODEL } from "@paperclipai/adapter-cursor-local";
-import { DEFAULT_GEMINI_LOCAL_MODEL } from "@paperclipai/adapter-gemini-local";
 
 function createValuesForAdapterType(
   adapterType: CreateConfigValues["adapterType"],
 ): CreateConfigValues {
   const { adapterType: _discard, ...defaults } = defaultCreateValues;
-  const nextValues: CreateConfigValues = { ...defaults, adapterType };
-  if (adapterType === "codex_local") {
-    nextValues.model = DEFAULT_CODEX_LOCAL_MODEL;
-    nextValues.dangerouslyBypassSandbox =
-      DEFAULT_CODEX_LOCAL_BYPASS_APPROVALS_AND_SANDBOX;
-  } else if (adapterType === "gemini_local") {
-    nextValues.model = DEFAULT_GEMINI_LOCAL_MODEL;
-  } else if (adapterType === "cursor") {
-    nextValues.model = DEFAULT_CURSOR_LOCAL_MODEL;
-  } else if (adapterType === "opencode_local") {
-    nextValues.model = "";
-  }
-  return nextValues;
+  return { ...defaults, adapterType };
 }
 
 export function NewAgent() {
@@ -72,12 +54,7 @@ export function NewAgent() {
     enabled: !!selectedCompanyId,
   });
 
-  const {
-    data: adapterModels,
-    error: adapterModelsError,
-    isLoading: adapterModelsLoading,
-    isFetching: adapterModelsFetching,
-  } = useQuery({
+  const { data: adapterModels } = useQuery({
     queryKey: selectedCompanyId
       ? queryKeys.agents.adapterModels(selectedCompanyId, configValues.adapterType)
       : ["agents", "none", "adapter-models", configValues.adapterType],
@@ -121,9 +98,37 @@ export function NewAgent() {
   const createAgent = useMutation({
     mutationFn: (data: Record<string, unknown>) =>
       agentsApi.hire(selectedCompanyId!, data),
-    onSuccess: (result) => {
+    onSuccess: async (result) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.agents.list(selectedCompanyId!) });
       queryClient.invalidateQueries({ queryKey: queryKeys.approvals.list(selectedCompanyId!) });
+
+      // Generate AI instructions from prompt template instead of raw copy
+      const promptTemplate = configValues.promptTemplate?.trim();
+      if (promptTemplate && selectedCompanyId && result.agent.id) {
+        try {
+          const { instructions } = await agentsApi.generateInstructions(
+            selectedCompanyId,
+            {
+              description: promptTemplate,
+              agentName: name.trim(),
+            },
+          );
+          if (instructions) {
+            await agentsApi.saveInstructionsFile(
+              result.agent.id,
+              {
+                path: "AGENTS.md",
+                content: instructions,
+                clearLegacyPromptTemplate: true,
+              },
+              selectedCompanyId,
+            );
+          }
+        } catch {
+          // Non-blocking: AI generation failure shouldn't block agent creation
+        }
+      }
+
       navigate(agentUrl(result.agent));
     },
     onError: (error) => {
@@ -139,34 +144,6 @@ export function NewAgent() {
   function handleSubmit() {
     if (!selectedCompanyId || !name.trim()) return;
     setFormError(null);
-    if (configValues.adapterType === "opencode_local") {
-      const selectedModel = configValues.model.trim();
-      if (!selectedModel) {
-        setFormError("OpenCode requires an explicit model in provider/model format.");
-        return;
-      }
-      if (adapterModelsError) {
-        setFormError(
-          adapterModelsError instanceof Error
-            ? adapterModelsError.message
-            : "Failed to load OpenCode models.",
-        );
-        return;
-      }
-      if (adapterModelsLoading || adapterModelsFetching) {
-        setFormError("OpenCode models are still loading. Please wait and try again.");
-        return;
-      }
-      const discovered = adapterModels ?? [];
-      if (!discovered.some((entry) => entry.id === selectedModel)) {
-        setFormError(
-          discovered.length === 0
-            ? "No OpenCode models discovered. Run `opencode models` and authenticate providers."
-            : `Configured OpenCode model is unavailable: ${selectedModel}`,
-        );
-        return;
-      }
-    }
     createAgent.mutate({
       name: name.trim(),
       role: effectiveRole,

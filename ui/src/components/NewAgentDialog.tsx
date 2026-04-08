@@ -57,7 +57,7 @@ export function NewAgentDialog() {
   // This automatically includes external/plugin adapters.
   const adapterGrid = useMemo(() => {
     const registered = listUIAdapters()
-      .filter((a) => isAgentAdapterType(a.type) && !disabledTypes.has(a.type));
+      .filter((a) => a.type === "claude_local" && isAgentAdapterType(a.type) && !disabledTypes.has(a.type));
 
     // Sort: recommended first, then alphabetical
     return registered

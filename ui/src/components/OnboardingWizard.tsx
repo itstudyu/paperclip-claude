@@ -553,7 +553,7 @@ export function OnboardingWizard() {
   function handleKeyDown(e: React.KeyboardEvent) {
     if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
       e.preventDefault();
-      if (step === 1 && companyName.trim()) handleStep1Next();
+      if (step === 1 && companyName.trim() && workspaceLocalPath.trim()) handleStep1Next();
       else if (step === 2 && agentName.trim()) handleStep2Next();
       else if (step === 3) handleStep3Next();
       else if (step === 4) handleLaunch();
@@ -682,7 +682,7 @@ export function OnboardingWizard() {
                           : "text-muted-foreground group-focus-within:text-foreground"
                       )}
                     >
-                      Local folder path (optional)
+                      Local folder path
                     </label>
                     <div className="flex items-center gap-2">
                       <input
@@ -736,7 +736,7 @@ export function OnboardingWizard() {
                           : "text-muted-foreground group-focus-within:text-foreground"
                       )}
                     >
-                      Describe what this agent should do (optional)
+                      Describe what this agent should do
                     </label>
                     <textarea
                       className="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground/50 resize-none min-h-[80px]"
@@ -1049,7 +1049,7 @@ export function OnboardingWizard() {
                   {step === 1 && (
                     <Button
                       size="sm"
-                      disabled={!companyName.trim() || loading}
+                      disabled={!companyName.trim() || !workspaceLocalPath.trim() || loading}
                       onClick={handleStep1Next}
                     >
                       {loading ? (
@@ -1064,7 +1064,7 @@ export function OnboardingWizard() {
                     <Button
                       size="sm"
                       disabled={
-                        !agentName.trim() || loading || adapterEnvLoading || generatingInstructions
+                        !agentName.trim() || !agentDescription.trim() || loading || adapterEnvLoading || generatingInstructions
                       }
                       onClick={handleStep2Next}
                     >

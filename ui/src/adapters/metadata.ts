@@ -52,19 +52,21 @@ export function listAdapterOptions(
   adapters: UIAdapterModule[] = listUIAdapters(),
 ): AdapterOptionMetadata[] {
   const getLabel = labelFor ?? getAdapterLabel;
-  return adapters.map((adapter) => ({
-    value: adapter.type,
-    label: getLabel(adapter.type),
-    comingSoon: !!getAdapterDisplay(adapter.type).comingSoon,
-    hidden: isAdapterTypeHidden(adapter.type),
-  }));
+  return adapters
+    .filter((adapter) => adapter.type === "claude_local")
+    .map((adapter) => ({
+      value: adapter.type,
+      label: getLabel(adapter.type),
+      comingSoon: !!getAdapterDisplay(adapter.type).comingSoon,
+      hidden: isAdapterTypeHidden(adapter.type),
+    }));
 }
 
 /**
  * List UI adapters excluding those hidden via the Adapters settings page.
  */
 export function listVisibleUIAdapters(): UIAdapterModule[] {
-  return listUIAdapters().filter((a) => !isAdapterTypeHidden(a.type));
+  return listUIAdapters().filter((a) => a.type === "claude_local" && !isAdapterTypeHidden(a.type));
 }
 
 /**
