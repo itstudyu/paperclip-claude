@@ -7,6 +7,7 @@ import { useCompany } from "../context/CompanyContext";
 import { companiesApi } from "../api/companies";
 import { goalsApi } from "../api/goals";
 import { agentsApi } from "../api/agents";
+import { companySkillsApi } from "../api/companySkills";
 import { issuesApi } from "../api/issues";
 import { projectsApi } from "../api/projects";
 import { queryKeys } from "../lib/queryKeys";
@@ -324,6 +325,16 @@ export function OnboardingWizard() {
       setCreatedCompanyPrefix(company.issuePrefix);
       setSelectedCompanyId(company.id);
       queryClient.invalidateQueries({ queryKey: queryKeys.companies.all });
+
+      // Copy external skills from an existing project (if any)
+      const existingCompany = companies.find((c) => c.id !== company.id);
+      if (existingCompany) {
+        try {
+          await companySkillsApi.copySkillsFrom(company.id, existingCompany.id);
+        } catch {
+          // Non-blocking: skill copy failure shouldn't block onboarding
+        }
+      }
 
       if (companyGoal.trim()) {
         const parsedGoal = parseOnboardingGoalInput(companyGoal);

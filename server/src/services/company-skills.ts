@@ -2367,5 +2367,27 @@ export function companySkillService(db: Db) {
     importPackageFiles,
     installUpdate,
     listRuntimeSkillEntries,
+    async copyExternalSkills(sourceCompanyId: string, targetCompanyId: string) {
+      const sourceSkills = await listFull(sourceCompanyId);
+      const externalSkills = sourceSkills.filter(
+        (s) => s.sourceType === "github" || s.sourceType === "url" || s.sourceType === "skills_sh",
+      );
+      if (externalSkills.length === 0) return [];
+      const imported: ImportedSkill[] = externalSkills.map((s) => ({
+        key: s.key,
+        slug: s.slug,
+        name: s.name,
+        description: s.description,
+        markdown: s.markdown,
+        sourceType: s.sourceType,
+        sourceLocator: s.sourceLocator,
+        sourceRef: s.sourceRef,
+        trustLevel: s.trustLevel,
+        compatibility: s.compatibility,
+        fileInventory: s.fileInventory,
+        metadata: s.metadata,
+      }));
+      return upsertImportedSkills(targetCompanyId, imported);
+    },
   };
 }

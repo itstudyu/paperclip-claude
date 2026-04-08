@@ -51,4 +51,9 @@ export const companySkillsApi = {
       `/companies/${encodeURIComponent(companyId)}/skills/${encodeURIComponent(skillId)}/install-update`,
       {},
     ),
+  copySkillsFrom: (targetCompanyId: string, sourceCompanyId: string) =>
+    api.post<{ copied: number; skills: CompanySkill[] }>(
+      `/companies/${encodeURIComponent(targetCompanyId)}/skills/copy-from/${encodeURIComponent(sourceCompanyId)}`,
+      {},
+    ),
 };

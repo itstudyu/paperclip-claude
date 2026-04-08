@@ -260,6 +260,14 @@ export function companySkillRoutes(db: Db) {
     },
   );
 
+  router.post("/companies/:companyId/skills/copy-from/:sourceCompanyId", async (req, res) => {
+    const targetCompanyId = req.params.companyId as string;
+    const sourceCompanyId = req.params.sourceCompanyId as string;
+    await assertCanMutateCompanySkills(req, targetCompanyId);
+    const copied = await svc.copyExternalSkills(sourceCompanyId, targetCompanyId);
+    res.json({ copied: copied.length, skills: copied });
+  });
+
   router.delete("/companies/:companyId/skills/:skillId", async (req, res) => {
     const companyId = req.params.companyId as string;
     const skillId = req.params.skillId as string;
